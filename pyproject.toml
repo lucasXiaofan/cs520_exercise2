@@ -1,0 +1,15 @@
+[project]
+name = "cs520-exercise2"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest-sugar>=1.1.1",
+]
