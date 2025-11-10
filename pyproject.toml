@@ -5,8 +5,13 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "bigcodebench>=0.2.5",
+    "dotenv>=0.9.9",
+    "dspy>=3.0.3",
+    "psutil>=7.1.3",
     "pytest>=8.4.2",
     "pytest-cov>=7.0.0",
+    "tempdir>=0.7.1",
 ]
 
 [dependency-groups]
