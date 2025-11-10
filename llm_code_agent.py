@@ -100,8 +100,9 @@ def execute_tool(name: str, args: dict) -> str:
 class ReActAgent:
     """ReAct agent using proper OpenAI tool calling API."""
     
-    def __init__(self, max_iterations=15, verbose=True, system_message=None):
+    def __init__(self, model_name, max_iterations=15, verbose=True, system_message=None):
         self.max_iterations = max_iterations
+        self.model_name = model_name
         self.verbose = verbose
         self.tools = [bash_tool, think_tool]
         self.system_message = system_message or """You are a helpful assistant with access to bash commands on macOS.
@@ -134,7 +135,7 @@ When the task is complete, provide a final text response (don't call any tools).
             
             # Get LLM response with tools
             response = client.chat.completions.create(
-                model=model_name,
+                model=self.model_name,
                 messages=messages,
                 tools=self.tools,
                 temperature=0
@@ -186,7 +187,7 @@ When the task is complete, provide a final text response (don't call any tools).
 
 # Example usage
 if __name__ == "__main__":
-    agent = ReActAgent(max_iterations=1)
+    
     
     # # Example 1: Read and generate test cases
     # result = agent.run(
@@ -200,15 +201,39 @@ if __name__ == "__main__":
     #     """
     # )
     # print(f"\n{'='*60}\nFinal Result:\n{result}\n{'='*60}")
-
-    result = agent.run(
-        f"""
-       1. read both minimax/ and problems/ 
-       2. modify the test file in problems/ if needed, don't delete the code, just add new lines
-       2. write a sh file that execute the sh file I can run all the test code 
-        """
-    )
-    print(f"\n{'='*60}\nFinal Result:\n{result}\n{'='*60}")
+    model_name = [
+        # "openrouter/polaris-alpha",
+        "minimax/minimax-m2:free",
+        # "anthropic/claude-haiku-4.5",
+        # "x-ai/grok-code-fast-1"
+    ]
+    test_modification_prompt = """
+    go to folder exercise2_part2_bcb_2problems, for each problem
+    modify SOLUTION_MODULES = [
+ 
+]
+    to add the problem matching solution from folder exercise2_part2_bcb_solutions
+    after done modify the SOLUTION_MODULES your task is done
+"""
+    generate_more_test_case_prompt = """
+    go to folder exercise2_part2_bcb_2problems, for each problem
+    check its relevant solution in exercise2_part2_bcb_solutions
+    do not modify existing test cases, add new test cases to increase the line or branch coverage
+    after append new testcases to both problems, your task is done
+"""
+    for modeln in model_name:
+        agent = ReActAgent(model_name=modeln,
+                           max_iterations=30)
+        result = agent.run(
+            f"""
+        Think step by step,
+        do the task below
+        1. read the two problem in folder exercise2_part2_bcb_2problems
+        2. write two solution inside folder exercise2_part2_bcb_solutions with model name {modeln} in the script name to distinguish, 
+        after create solution, your task is done.
+            """
+        )
+        print(f"\n{'='*60}\nFinal Result:\n{result}\n{'='*60}")
     
     # Example 2: Simple file operation
     # result = agent.run(
