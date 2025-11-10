@@ -1,5 +1,6 @@
-Author: XiaoFan Lu
-github page: https://github.com/lucasXiaofan/cs520_exercise2
+# CS520-exercise2-Automated Testing & Coverage Report
+- Author: XiaoFan Lu
+- github page: https://github.com/lucasXiaofan/cs520_exercise2
 # Part 1
 check LLM generated code from exercise 1 in /multi_solution_varaints in python format and /part_2_testing_results in json format along with benchmark results
 ## Coverage Analysis Report - Multi-Model Solution Variants
