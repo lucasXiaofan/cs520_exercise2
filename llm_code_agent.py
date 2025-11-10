@@ -218,20 +218,26 @@ if __name__ == "__main__":
     generate_more_test_case_prompt = """
     go to folder exercise2_part2_bcb_2problems, for each problem
     check its relevant solution in exercise2_part2_bcb_solutions
-    do not modify existing test cases, add new test cases to increase the line or branch coverage
-    after append new testcases to both problems, your task is done
+    do not modify existing test cases, add new test cases to increase the line or branch coverage, prevent duplicate test cases.
+    you need comments the new test cases you created, to specify from the old one.
+    after append new testcases to both problems, 
+    summarize in few sentence what you improved, 
+    if nothing to add explain why
+    your task is done 
 """
     for modeln in model_name:
         agent = ReActAgent(model_name=modeln,
                            max_iterations=30)
         result = agent.run(
-            f"""
-        Think step by step,
-        do the task below
-        1. read the two problem in folder exercise2_part2_bcb_2problems
-        2. write two solution inside folder exercise2_part2_bcb_solutions with model name {modeln} in the script name to distinguish, 
-        after create solution, your task is done.
-            """
+            generate_more_test_case_prompt
+            # test_modification_prompt
+        #     f"""
+        # Think step by step,
+        # do the task below
+        # 1. read the two problem in folder exercise2_part2_bcb_2problems
+        # 2. write two solution inside folder exercise2_part2_bcb_solutions with model name {modeln} in the script name to distinguish, 
+        # after create solution, your task is done.
+        #     """
         )
         print(f"\n{'='*60}\nFinal Result:\n{result}\n{'='*60}")
     

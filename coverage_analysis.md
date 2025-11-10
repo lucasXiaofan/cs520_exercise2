@@ -102,10 +102,104 @@ open coverage_html_all/index.html
 
 
 # Part 2
-## decision to change from APP benchmark to BigCodeBenchmark 
-- sourece of new benchmark: https://github.com/bigcode-project/bigcodebench
+
+## Decision to Change from APP Benchmark to BigCodeBenchmark
+- Source of new benchmark: https://github.com/bigcode-project/bigcodebench
 ![alt text](need_harder_code1.png)
-and 
+and
 ![alt text](image.png)
-just show that the APP benchmark used in exercise one is very simple, and the uncovered branch is impossible to cover because those condition will never be true with valid input. 
+
+The APP benchmark used in exercise one is very simple, and the uncovered branches are impossible to cover because those conditions will never be true with valid input. BigCodeBenchmark provides more complex, real-world code challenges.
+
+## Initial Coverage on Four Different Solutions Without LLM Improvement
+
+### Baseline Coverage (Before Iterative Improvement)
+
+| Problem | Overall Coverage | Statements | Missing | Branches | Partial |
+|---------|-----------------|------------|---------|----------|---------|
+| BigCodeBench 15 (CSV Command Executor) | **52%** | 194 total | 91 missing | 62 branches | 3 partial |
+| BigCodeBench 17 (Process Manager) | **28%** | 194 total | 143 missing | 26 branches | 0 partial |
+
+- for problem 17
+![alt text](image-1.png)
+
+- for problem 15
+![alt text](image-2.png)
+
+## Begin LLM Testing Improvement Loop
+
+**Prompt used:**
+```
+    go to folder exercise2_part2_bcb_2problems, for each problem
+    check its relevant solution in exercise2_part2_bcb_solutions
+    do not modify existing test cases, add new test cases to increase the line or branch coverage, prevent duplicate test cases.
+    you need comments the new test cases you created, to specify from the old one.
+    after append new testcases to both problems,
+    summarize in few sentence what you improved,
+    if nothing to add explain why
+    your task is done
+```
+
+Test case duplication is avoided by prompting the LLM agent to read the entire test file and specifically requesting no duplicate test cases.
+
+### Iteration 1
+
+| Problem | Overall Coverage | Change | Statements | Missing | Branches | Partial | New Tests Added |
+|---------|-----------------|--------|------------|---------|----------|---------|-----------------|
+| BigCodeBench 15 | **54%** | +2% | 194 total | 89 missing | 62 branches | 3 partial | 6 tests |
+| BigCodeBench 17 | **30%** | +2% | 194 total | 137 missing | 26 branches | 4 partial | 12 tests |
+
+**What Changed:**
+- **Problem 15**: Added exception handling tests covering timeout scenarios, whitespace/empty row handling, stderr capture, output directory creation, and subprocess error handling to exercise previously untested error paths.
+- **Problem 17**: Added comprehensive exception handling tests for `psutil` exceptions (NoSuchProcess, AccessDenied, ZombieProcess) during both process iteration and termination, plus timeout handling during process wait operations.
+
+- for problem 17
+![alt text](image-3.png)
+
+- for problem 15
+![alt text](image-4.png)
+
+### Iteration 2
+
+| Problem | Overall Coverage | Change | Statements | Missing | Branches | Partial | New Tests Added |
+|---------|-----------------|--------|------------|---------|----------|---------|-----------------|
+| BigCodeBench 15 | **56%** | +2% | 194 total | 84 missing | 62 branches | 3 partial | 2 tests |
+| BigCodeBench 17 | **31%** | +1% | 194 total | 137 missing | 26 branches | 4 partial | 5 tests |
+
+**What Changed:**
+- **Problem 15**: Added tests for return value format consistency and file write operations to cover different solution implementations' output path formats.
+- **Problem 17**: Added edge case tests for non-matching processes, duplicate process handling, special characters in process names, and empty iterator results to improve branch coverage.
+
+- for problem 17
+![alt text](image-5.png)
+
+- for problem 15
+![alt text](image-6.png)
+
+### Iteration 3
+
+| Problem | Overall Coverage | Change | Statements | Missing | Branches | Partial | New Tests Added |
+|---------|-----------------|--------|------------|---------|----------|---------|-----------------|
+| BigCodeBench 15 | **58%** | +2% | 194 total | 81 missing | 62 branches | 3 partial | 11 tests |
+| BigCodeBench 17 | **31%** | 0% | 194 total | 137 missing | 26 branches | 4 partial | 10 tests |
+
+**What Changed:**
+- **Problem 15**: Added tests for CSV edge cases (quoted fields with commas, multi-column CSV files), command output variations (no output, very long output, unicode/special characters), and shell metacharacter handling to cover parsing and encoding edge cases.
+- **Problem 17**: Added tests for Popen exceptions, edge cases (empty string process name, very long names, spaces and metacharacters), and complete termination flow scenarios, but coverage plateaued as remaining uncovered code likely requires system-level conditions or is unreachable.
+
+- for problem 17
+![alt text](image-8.png)
+
+- for problem 15
+![alt text](image-7.png)
+
+## Summary Statistics
+
+| Problem | Initial Coverage | Final Coverage | Total Improvement | Total Tests Added |
+|---------|------------------|----------------|-------------------|-------------------|
+| BigCodeBench 15 (CSV Command Executor) | 52% | 58% | **+6%** | **19 tests** |
+| BigCodeBench 17 (Process Manager) | 28% | 31% | **+3%** | **27 tests** |
+
+The iterative improvement shows diminishing returns after iteration 2, with Problem 17 reaching a coverage plateau in iteration 3, suggesting the remaining uncovered lines require specific system states or represent unreachable defensive code.
+
 
