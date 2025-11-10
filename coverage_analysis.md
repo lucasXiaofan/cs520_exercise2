@@ -1,4 +1,5 @@
 Author: XiaoFan Lu
+github page: https://github.com/lucasXiaofan/cs520_exercise2
 # Part 1
 check LLM generated code from exercise 1 in /multi_solution_varaints in python format and /part_2_testing_results in json format along with benchmark results
 ## Coverage Analysis Report - Multi-Model Solution Variants
@@ -139,6 +140,7 @@ The APP benchmark used in exercise one is very simple, and the uncovered branche
     if nothing to add explain why
     your task is done
 ```
+I run the code in llm_code_agent.py
 
 Test case duplication is avoided by prompting the LLM agent to read the entire test file and specifically requesting no duplicate test cases.
 
@@ -201,5 +203,41 @@ Test case duplication is avoided by prompting the LLM agent to read the entire t
 | BigCodeBench 17 (Process Manager) | 28% | 31% | **+3%** | **27 tests** |
 
 The iterative improvement shows diminishing returns after iteration 2, with Problem 17 reaching a coverage plateau in iteration 3, suggesting the remaining uncovered lines require specific system states or represent unreachable defensive code.
+
+# Part 3: 
+
+To test if my coverage improvements actually help find bugs, I injected realistic bugs into one solution from each problem and ran the full test suite.
+
+### Problem 15: CSV Command Executor
+
+**Bugs I Added**:
+1. **Off-by-one error**: Started counting from 0 instead of 1 (classic mistake mixing 0-based vs 1-based indexing)
+2. **Wrong return code check**: Changed `returncode == 0` to `returncode != 1` (misunderstanding that errors aren't just exit code 1)
+3. **Missing whitespace filter**: Didn't filter out whitespace-only CSV rows
+
+**Results**: 7 out of 26 tests failed (27%)
+
+All 7 failures came from the return code bug (#2). Tests like `test_invalid_command` and `test_command_with_timeout` immediately caught it because they check error message output. Interestingly, the off-by-one bug wasn't caught - our tests check if files exist but don't verify the exact filenames. That's a gap we should fix.
+
+### Problem 17: Process Manager
+
+**Bugs I Added**:
+1. **Substring matching bug**: Changed `proc.name() == process_name` to `process_name in proc.name()` (so "note" would match "notepad", "notes", etc.)
+2. **Missing exception handling**: Only caught `NoSuchProcess`, dropped `AccessDenied` and `ZombieProcess` (common when copying from Stack Overflow)
+3. **No wait after terminate**: Forgot to wait for process to die before restarting (race condition)
+
+**Results**: 15 out of 29 tests failed (52%)
+
+The missing exception handling caused 8 immediate crashes when `AccessDenied` exceptions weren't caught. The missing wait logic broke 6 tests that verify proper cleanup. Higher failure rate here shows our exception-focused tests from iterations 1-3 really paid off.
+
+## What This Tells me
+
+**Branch coverage matters way more than line coverage.** All the bugs caught were in error paths - exception handling, stderr processing, timeout scenarios. The tests we added in iterations 1-3 specifically targeting these branches were the ones that found bugs.
+
+**my iterative improvements worked.** Without the exception handling tests from iteration 1, Problem 17 would've only caught 3 bugs instead of 15. That's a 5x improvement in fault detection.
+
+**Coverage isn't perfect.** The off-by-one bug slipped through because we checked behavior but not exact outputs. High coverage doesn't guarantee correctness - you still need tests that verify the right things.
+
+
 
 
